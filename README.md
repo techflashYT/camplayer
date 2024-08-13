@@ -92,13 +92,13 @@ I take no responsibility for leaked footage, leaked credentials, hacked cameras 
 The instruction below assume you are running a recent Raspberry Pi OS Lite build.  
 If you are interested in a plug & play system with some additional features, check out [https://www.rpi-camplayer.com/](https://www.rpi-camplayer.com/)
 
-Add the following lines to '/boot/config.txt':  
+Add the following lines to '/boot/firmware/config.txt':  
 ```
 gpu_mem=256
 disable_overscan=1
 ```
 
-Comment out (or delete) the following line in '/boot/config.txt' and reboot:  
+Comment out (or delete) the following line in '/boot/firmware/config.txt' and reboot:  
 ```
 # dtoverlay=vc4-fkms-v3d
 ```
