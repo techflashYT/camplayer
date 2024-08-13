@@ -123,13 +123,8 @@ def main():
              % (CONSTANTS.CONFIG_PATH, CONSTANTS.CACHE_DIR))
 
     # Cleanup some stuff in case something went wrong on the previous run
-    utils.kill_service('omxplayer.bin', force=True)
     utils.kill_service('vlc', force=True)
     utils.kill_service('pipng', force=True)
-
-    # OMXplayer is absolutely required!
-    if not utils.os_package_installed("omxplayer.bin"):
-        sys.exit("OMXplayer not installed but required!")
 
     # ffprobe is absolutely required!
     if not utils.os_package_installed("ffprobe"):
@@ -301,7 +296,6 @@ def main():
     # Cleanup stuff before exit
     keyboard.destroy()
     BackGroundManager.destroy()
-    utils.kill_service('omxplayer.bin', force=True)
     utils.kill_service('vlc', force=True)
     utils.kill_service('pipng', force=True)
 

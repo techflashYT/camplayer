@@ -35,27 +35,19 @@ chmod 755 $DESTPATH_BIN
 echo "Installing required distribution packages"
 apt-get update
 
-if [ ! -e /usr/bin/pip3 ]; then
-    apt-get -y install python3-pip
-fi
-
 if [ ! -e /usr/bin/ffprobe ]; then
     apt-get -y install ffmpeg
 fi
 
-if [ ! -e /usr/bin/omxplayer ]; then
-    apt-get -y install omxplayer
+if [ ! -e /usr/bin/vlc ]; then
+    apt-get -y install vlc
 fi
 
 # --------- Install required python packages ---------
 # ----------------------------------------------------
 
 echo "Installing required python packages"
-pip3 show evdev 1>/dev/null
-if [ $? != 0 ]; then
-    pip3 install evdev==1.2.0
-fi
-
+apt-get install -y python3-evdev
 # ---------------- Systemd service -------------------
 # ----------------------------------------------------
 
@@ -64,16 +56,9 @@ cp -v camplayer.service $SYSTEMD_PATH
 systemctl daemon-reload
 systemctl disable camplayer.service
 
-# ---------------------- pipng -----------------------
-# ----------------------------------------------------
-
-echo "Installing and building pipng"
-git clone https://github.com/raspicamplayer/pipng.git
-cd ./pipng/ && make && make install
-cd ../
-rm -rf pipng
 
 # --------------------- Done! ------------------------
 # ----------------------------------------------------
 
 echo "Done!"
+

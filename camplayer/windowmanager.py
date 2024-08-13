@@ -30,8 +30,7 @@ class PLAYSTATE(IntEnum):
 @unique
 class PLAYER(IntEnum):
     NONE        = 0
-    OMXPLAYER   = 1
-    VLCPLAYER   = 2
+    VLCPLAYER   = 1
 
 
 class DBUS_COMMAND(object):
@@ -313,57 +312,59 @@ class Window(object):
 
             self.fullscreen_mode = fullscreen
 
-            if self._player == PLAYER.OMXPLAYER:
+
+#            if self._player == PLAYER.OMXPLAYER:
                 # OMXplayer instance is playing outside the visible screen area.
                 # Sending the position command will move this instance into the visible screen area.
 
-                if fullscreen:
-                    videopos_arg = str("%i %i %i %i" % (CONSTANTS.VIRT_SCREEN_OFFSET_X, CONSTANTS.VIRT_SCREEN_OFFSET_Y,
-                                                        CONSTANTS.VIRT_SCREEN_OFFSET_X + CONSTANTS.VIRT_SCREEN_WIDTH,
-                                                        CONSTANTS.VIRT_SCREEN_OFFSET_Y + CONSTANTS.VIRT_SCREEN_HEIGHT))
-                else:
-                    videopos_arg = str("%i %i %i %i" % (self.x1, self.y1, self.x2, self.y2))
+#                if fullscreen:
+#                    videopos_arg = str("%i %i %i %i" % (CONSTANTS.VIRT_SCREEN_OFFSET_X, CONSTANTS.VIRT_SCREEN_OFFSET_Y,
+#                                                        CONSTANTS.VIRT_SCREEN_OFFSET_X + CONSTANTS.VIRT_SCREEN_WIDTH,
+#                                                        CONSTANTS.VIRT_SCREEN_OFFSET_Y + CONSTANTS.VIRT_SCREEN_HEIGHT))
+#                else:
+#                    videopos_arg = str("%i %i %i %i" % (self.x1, self.y1, self.x2, self.y2))
 
                 # Re-open OMXplayer with the audio stream enabled
-                if CONFIG.AUDIO_MODE == AUDIOMODE.FULLSCREEN and fullscreen \
-                        and not self._omx_audio_enabled and self.active_stream.has_audio:
-                    self.visible = True
-                    self.stream_refresh()
-                    return
+#                if CONFIG.AUDIO_MODE == AUDIOMODE.FULLSCREEN and fullscreen \
+#                        and not self._omx_audio_enabled and self.active_stream.has_audio:
+#                    self.visible = True
+#                    self.stream_refresh()
+#                    return
 
                 # Re-open OMXplayer with the audio stream disabled
-                if self._omx_audio_enabled and not fullscreen:
-                    self.visible = True
-                    self.stream_refresh()
-                    return
+#                if self._omx_audio_enabled and not fullscreen:
+#                    self.visible = True
+#                    self.stream_refresh()
+#                    return
 
-                if _async:
-                    setvisible_thread = threading.Thread(
-                        target=self._send_dbus_command,
-                        args=(DBUS_COMMAND.OMXPLAYER_VIDEOPOS, videopos_arg,))
+#                if _async:
+#                    setvisible_thread = threading.Thread(
+#                        target=self._send_dbus_command,
+#                        args=(DBUS_COMMAND.OMXPLAYER_VIDEOPOS, videopos_arg,))
 
-                    setvisible_thread.start()
-                else:
-                    self._send_dbus_command(DBUS_COMMAND.OMXPLAYER_VIDEOPOS, videopos_arg)
+#                    setvisible_thread.start()
+#                else:
+#                    self._send_dbus_command(DBUS_COMMAND.OMXPLAYER_VIDEOPOS, videopos_arg)
+###
 
-            elif fullscreen:
-                # VLC player instance can be playing or in idle state.
-                # Sending the play command will start fullscreen playback of our video/stream.
-                # When VLC is playing other content, we will hijack it.
+#            elif fullscreen:
+            # VLC player instance can be playing or in idle state.
+            # Sending the play command will start fullscreen playback of our video/stream.
+            # When VLC is playing other content, we will hijack it.
 
-                # Start our stream
-                self._send_dbus_command(DBUS_COMMAND.PLAY_PLAY)
+            # Start our stream
+            self._send_dbus_command(DBUS_COMMAND.PLAY_PLAY)
 
-                # Pretend like the player just started again
-                self.playstate = PLAYSTATE.INIT2
-                self._time_streamstart = time.monotonic()
+            # Pretend like the player just started again
+            self.playstate = PLAYSTATE.INIT2
+            self._time_streamstart = time.monotonic()
 
-                # Mark our steam as the active one for this display
-                Window._vlc_active_stream_url[self._display_num - 1] = self.active_stream.url
+            # Mark our steam as the active one for this display
+            Window._vlc_active_stream_url[self._display_num - 1] = self.active_stream.url
 
-            else:
-                # Windowed with VLC not supported -> stop video
-                self.stream_stop()
+#            else:
+            # Windowed with VLC not supported -> stop video
+#                self.stream_stop()
 
         self.visible = True
         
@@ -377,34 +378,34 @@ class Window(object):
             LOG.INFO(self._LOG_NAME, "stream set invisible '%s' '%s'" %
                      (self._omx_dbus_ident, self.active_stream.printable_url()))
 
-            if self._player == PLAYER.OMXPLAYER:
+#            if self._player == PLAYER.OMXPLAYER:
                 # OMXplayer instance is playing inside the visible screen area.
                 # Sending the position command with offset will move this instance out of the visible screen area.
 
-                if self._omx_audio_enabled:
-                    self.visible = False
-                    self.stream_refresh()
-                    return
+#                if self._omx_audio_enabled:
+#                    self.visible = False
+#                    self.stream_refresh()
+#                    return
 
-                videopos_arg = str("%i %i %i %i" % (
-                    self.x1 + CONSTANTS.WINDOW_OFFSET, self.y1,
-                    self.x2 + CONSTANTS.WINDOW_OFFSET, self.y2))
+#                videopos_arg = str("%i %i %i %i" % (
+#                    self.x1 + CONSTANTS.WINDOW_OFFSET, self.y1,
+#                    self.x2 + CONSTANTS.WINDOW_OFFSET, self.y2))
 
-                if _async:
-                    setinvisible_thread = threading.Thread(
-                        target=self._send_dbus_command,
-                        args=(DBUS_COMMAND.OMXPLAYER_VIDEOPOS, videopos_arg,))
+#                if _async:
+#                    setinvisible_thread = threading.Thread(
+#                        target=self._send_dbus_command,
+#                        args=(DBUS_COMMAND.OMXPLAYER_VIDEOPOS, videopos_arg,))
 
-                    setinvisible_thread.start()
-                else:
-                    self._send_dbus_command(DBUS_COMMAND.OMXPLAYER_VIDEOPOS, videopos_arg)
+#                    setinvisible_thread.start()
+#                else:
+#                    self._send_dbus_command(DBUS_COMMAND.OMXPLAYER_VIDEOPOS, videopos_arg)
 
-            else:
+#            else:
 
-                # It's possible that another window hijacked our vlc instance, so do not send 'stop' then.
-                if self.active_stream.url == Window._vlc_active_stream_url[self._display_num - 1]:
-                    self._send_dbus_command(DBUS_COMMAND.PLAY_STOP)
-                    Window._vlc_active_stream_url[self._display_num - 1] = ""
+            # It's possible that another window hijacked our vlc instance, so do not send 'stop' then.
+            if self.active_stream.url == Window._vlc_active_stream_url[self._display_num - 1]:
+                self._send_dbus_command(DBUS_COMMAND.PLAY_STOP)
+                Window._vlc_active_stream_url[self._display_num - 1] = ""
 
         self.visible = False
 
@@ -461,36 +462,36 @@ class Window(object):
             # 04/04/2020: Under some circumstances omxplayer freezes with corrupt streams (bad wifi/network quality etc.),
             # while it still reports its playstate as 'playing',
             # therefore we monitor will monitor the reported 'duration' (for livestreams) from now on.
-            if not self.active_stream.url.startswith('file://') and self._player == PLAYER.OMXPLAYER:
+            #if not self.active_stream.url.startswith('file://') and self._player == PLAYER.OMXPLAYER:
 
-                output = self._send_dbus_command(
-                    DBUS_COMMAND.PLAY_DURATION, kill_player_on_error=self.playtime > CONFIG.PLAYTIMEOUT_SEC)
+            #    output = self._send_dbus_command(
+            #        DBUS_COMMAND.PLAY_DURATION, kill_player_on_error=self.playtime > CONFIG.PLAYTIMEOUT_SEC)
 
-                try:
-                    duration = int(output.split("int64")[1].strip())
-                    duration_diff = duration - self._omx_duration
-                    self._omx_duration = duration
-                except Exception:
-                    self._omx_duration = 0
+            #    try:
+            #        duration = int(output.split("int64")[1].strip())
+            #        duration_diff = duration - self._omx_duration
+            #        self._omx_duration = duration
+            #    except Exception:
+            #        self._omx_duration = 0
 
-            else:
-                output = self._send_dbus_command(
-                    DBUS_COMMAND.PLAY_STATUS, kill_player_on_error=self.playtime > CONFIG.PLAYTIMEOUT_SEC)
+            #else:
+            output = self._send_dbus_command(
+                DBUS_COMMAND.PLAY_STATUS, kill_player_on_error=self.playtime > CONFIG.PLAYTIMEOUT_SEC)
 
             if (output and "playing" in str(output).lower()) or duration_diff > 0:
                 self.playstate = PLAYSTATE.PLAYING
 
-            else:
+            # else:
                 # Only set broken after a timeout period,
                 # so keep the init state the first seconds
-                if self.playtime > CONFIG.PLAYTIMEOUT_SEC:
+                # if self.playtime > CONFIG.PLAYTIMEOUT_SEC:
 
-                    if self._player == PLAYER.OMXPLAYER or self.visible:
-                        # Don't set broken when VLC is in "stopped" state
-                        # Stopped state occurs when not visible
+            #         if self._player == PLAYER.OMXPLAYER or self.visible:
+            #           # Don't set broken when VLC is in "stopped" state
+            #           # Stopped state occurs when not visible
 
-                        self.playstate = PLAYSTATE.BROKEN
-                
+            #            self.playstate = PLAYSTATE.BROKEN
+
             self._time_playstatus = time.monotonic()
 
         if old_playstate != self.playstate:
@@ -506,15 +507,15 @@ class Window(object):
         command_destination = ""
         command_prefix = ""
 
-        if self._player == PLAYER.OMXPLAYER:
-            command_destination = self._omx_dbus_ident
+        #if self._player == PLAYER.OMXPLAYER:
+        #    command_destination = self._omx_dbus_ident
 
             # OMXplayer needs some environment variables
-            command_prefix = str("export DBUS_SESSION_BUS_ADDRESS=`cat /tmp/omxplayerdbus.%s` && "
-                                 "export DBUS_SESSION_BUS_PID=`cat /tmp/omxplayerdbus.%s.pid` && "
-                                 % (GLOBALS.USERNAME, GLOBALS.USERNAME))
+        #    command_prefix = str("export DBUS_SESSION_BUS_ADDRESS=`cat /tmp/omxplayerdbus.%s` && "
+        #                         "export DBUS_SESSION_BUS_PID=`cat /tmp/omxplayerdbus.%s.pid` && "
+        #                         % (GLOBALS.USERNAME, GLOBALS.USERNAME))
 
-        elif self._player == PLAYER.VLCPLAYER:
+        if self._player == PLAYER.VLCPLAYER:
             command_destination = Window._vlc_dbus_ident[self._display_num - 1]
 
             # VLC changes its DBus string to 'org.mpris.MediaPlayer2.vlc.instancePID'
@@ -708,14 +709,14 @@ class Window(object):
         # OMXplayer:
         # - omxplayer doen't support an idle state, stopping playback will close omxplayer,
         #   so in this case we also have to cleanup the pids.
-        elif self._player == PLAYER.OMXPLAYER and self.omx_player_pid:
-            try:
-                os.kill(self.omx_player_pid, signal.SIGTERM)
-            except Exception as error:
-                LOG.ERROR(self._LOG_NAME, "pid kill error: %s" % str(error))
+        #elif self._player == PLAYER.OMXPLAYER and self.omx_player_pid:
+        #    try:
+        #        os.kill(self.omx_player_pid, signal.SIGTERM)
+        #    except Exception as error:
+        #        LOG.ERROR(self._LOG_NAME, "pid kill error: %s" % str(error))
 
-            self._pidpool_remove_pid(self.omx_player_pid)
-            self.omx_player_pid = 0
+        #    self._pidpool_remove_pid(self.omx_player_pid)
+        #    self.omx_player_pid = 0
 
         if self.active_stream:
             Window._total_weight -= self.get_weight(self.active_stream)
@@ -770,52 +771,52 @@ class Window(object):
 
         # OMXplayer can play in fullscreen and windowed mode
         # One instance per window
-        if stream.valid_video_windowed:
-            self._player = PLAYER.OMXPLAYER
+        #if stream.valid_video_windowed:
+        #    self._player = PLAYER.VLCPLAYER
 
             # Layer should be unique to avoid visual glitches/collisions
-            omx_layer_arg = (self._screen_num * CONSTANTS.MAX_WINDOWS) + self._window_num
+        #    omx_layer_arg = (self._screen_num * CONSTANTS.MAX_WINDOWS) + self._window_num
 
-            if self.fullscreen_mode and self.visible:
+        #    if self.fullscreen_mode and self.visible:
                 # Window position also required for fullscreen playback,
                 # otherwise lower layers will be disabled when moving the window position later on
 
-                omx_pos_arg = str("%i %i %i %i" % (
-                    CONSTANTS.VIRT_SCREEN_OFFSET_X, CONSTANTS.VIRT_SCREEN_OFFSET_Y,
-                    CONSTANTS.VIRT_SCREEN_OFFSET_X + CONSTANTS.VIRT_SCREEN_WIDTH,
-                    CONSTANTS.VIRT_SCREEN_OFFSET_Y + CONSTANTS.VIRT_SCREEN_HEIGHT))
+        #        omx_pos_arg = str("%i %i %i %i" % (
+        #            CONSTANTS.VIRT_SCREEN_OFFSET_X, CONSTANTS.VIRT_SCREEN_OFFSET_Y,
+        #            CONSTANTS.VIRT_SCREEN_OFFSET_X + CONSTANTS.VIRT_SCREEN_WIDTH,
+        #            CONSTANTS.VIRT_SCREEN_OFFSET_Y + CONSTANTS.VIRT_SCREEN_HEIGHT))
 
-            else:
-                omx_pos_arg = str("%i %i %i %i" % (
-                    self.x1 + (0 if self.visible else CONSTANTS.WINDOW_OFFSET), self.y1,
-                    self.x2 + (0 if self.visible else CONSTANTS.WINDOW_OFFSET), self.y2
-                ))
+        #    else:
+        #        omx_pos_arg = str("%i %i %i %i" % (
+        #            self.x1 + (0 if self.visible else CONSTANTS.WINDOW_OFFSET), self.y1,
+        #            self.x2 + (0 if self.visible else CONSTANTS.WINDOW_OFFSET), self.y2
+        #        ))
 
-            player_cmd = ['omxplayer',
-                '--no-keys',                                                # No keyboard input
-                '--no-osd',                                                 # No OSD
-                '--aspect-mode',    'stretch',                              # Stretch video if aspect doesn't match
-                '--dbus_name',      self._omx_dbus_ident,                   # Dbus name for controlling position etc.
-                '--threshold',      str(CONFIG.BUFFERTIME_MS / 1000),       # Threshold of buffer in seconds
-                '--layer',          str(omx_layer_arg),                     # Dispmanx layer
-                '--alpha',          '255',                                  # No transparency
-                '--nodeinterlace',                                          # Assume progressive streams
-                '--nohdmiclocksync',                                        # Clock sync makes no sense with multiple clock sources
-                '--display',        '7' if self._display_num == 2 else '2', # 2 is HDMI0 (default), 7 is HDMI1 (pi4)
-                '--timeout',        str(CONFIG.PLAYTIMEOUT_SEC),            # Give up playback after this period of trying
-                '--win',            omx_pos_arg                             # Window position
-            ]
+        #    player_cmd = ['omxplayer',
+        #        '--no-keys',                                                # No keyboard input
+        #        '--no-osd',                                                 # No OSD
+        #        '--aspect-mode',    'stretch',                              # Stretch video if aspect doesn't match
+        #        '--dbus_name',      self._omx_dbus_ident,                   # Dbus name for controlling position etc.
+        #        '--threshold',      str(CONFIG.BUFFERTIME_MS / 1000),       # Threshold of buffer in seconds
+        #        '--layer',          str(omx_layer_arg),                     # Dispmanx layer
+        #        '--alpha',          '255',                                  # No transparency
+        #        '--nodeinterlace',                                          # Assume progressive streams
+        #        '--nohdmiclocksync',                                        # Clock sync makes no sense with multiple clock sources
+        #        '--display',        '7' if self._display_num == 2 else '2', # 2 is HDMI0 (default), 7 is HDMI1 (pi4)
+        #        '--timeout',        str(CONFIG.PLAYTIMEOUT_SEC),            # Give up playback after this period of trying
+        #        '--win',            omx_pos_arg                             # Window position
+        #    ]
 
-            if not self.force_udp and not stream.force_udp:
-                player_cmd.extend(['--avdict', 'rtsp_transport:tcp'])       # Force RTSP over TCP
+        #    if not self.force_udp and not stream.force_udp:
+        #        player_cmd.extend(['--avdict', 'rtsp_transport:tcp'])       # Force RTSP over TCP
 
-            if stream.url.startswith('file://'):
-                player_cmd.append('--loop')                                 # Loop for local files (demo/test mode)
-            else:
-                player_cmd.append('--live')                                 # Avoid sync issues with long playing streams
+        #    if stream.url.startswith('file://'):
+        #        player_cmd.append('--loop')                                 # Loop for local files (demo/test mode)
+        #    else:
+        #        player_cmd.append('--live')                                 # Avoid sync issues with long playing streams
 
-            if CONFIG.AUDIO_MODE == AUDIOMODE.FULLSCREEN and \
-                    self.visible and self.fullscreen_mode and stream.has_audio:
+        #    if CONFIG.AUDIO_MODE == AUDIOMODE.FULLSCREEN and \
+        #            self.visible and self.fullscreen_mode and stream.has_audio:
                 # OMXplayer can only open 8 instances instead of 16 when audio is enabled,
                 # this can also lead to total system lockups...
                 # Work around this by disabling the audio stream when in windowed mode,
@@ -823,34 +824,35 @@ class Window(object):
                 # set_visible() and set_invisible() methods are also adopted for this.
 
                 # Volume % to millibels conversion
-                volume = int(2000 * math.log10(max(CONFIG.AUDIO_VOLUME, 0.001) / 100))
-                player_cmd.extend(['--vol', str(volume)])                   # Set audio volume
+        #        volume = int(2000 * math.log10(max(CONFIG.AUDIO_VOLUME, 0.001) / 100))
+        #        player_cmd.extend(['--vol', str(volume)])                   # Set audio volume
 
-                self._omx_audio_enabled = True
-            else:
-                player_cmd.extend(['--aidx', '-1'])                         # Disable audio stream
-                self._omx_audio_enabled = False
+        #        self._omx_audio_enabled = True
+        #    else:
+        #        player_cmd.extend(['--aidx', '-1'])                         # Disable audio stream
+        #        self._omx_audio_enabled = False
 
             # Show our channel name with a custom subtitle file?
             # OMXplayer OSD not supported on pi4 hardware
-            if sub_file and not "4B" in GLOBALS.PI_MODEL:
-                if os.path.isfile(sub_file):
-                    player_cmd.extend(['--subtitles', sub_file ])           # Add channel name as subtitle
-                    player_cmd.extend(
-                        ['--no-ghost-box', '--align', 'center',
-                         '--lines', '1'])                                   # Set subtitle properties
+        #    if sub_file and not "4B" in GLOBALS.PI_MODEL:
+        #        if os.path.isfile(sub_file):
+        #            player_cmd.extend(['--subtitles', sub_file ])           # Add channel name as subtitle
+        #            player_cmd.extend(
+        #                ['--no-ghost-box', '--align', 'center',
+        #                 '--lines', '1'])                                   # Set subtitle properties
 
         # VLC media player can play only in fullscreen mode
         # One fullscreen instance per display
-        elif self.fullscreen_mode and stream.valid_video_fullscreen:
+        if self.fullscreen_mode and stream.valid_video_fullscreen:
             self._player = PLAYER.VLCPLAYER
 
+
+                #'--mmal-display=hdmi-' + str(self._display_num),            # Select the correct display
+                #'--mmal-layer=0',                                           # OMXplayer uses layers starting from 0, don't interference
             player_cmd = ['cvlc',
                 '--fullscreen',                                             # VLC does not support windowed mode without X11
                 '--network-caching=' + str(CONFIG.BUFFERTIME_MS),           # Threshold of buffer in miliseconds
                 '--no-keyboard-events',                                     # No keyboard events
-                '--mmal-display=hdmi-' + str(self._display_num),            # Select the correct display
-                '--mmal-layer=0',                                           # OMXplayer uses layers starting from 0, don't interference
                 '--input-timeshift-granularity=0',                          # Disable timeshift feature
                 '--vout=mmal_vout',                                         # Force MMAL mode
                 '--gain=1',                                                 # Audio gain
@@ -942,10 +944,10 @@ class Window(object):
             LOG.DEBUG(self._LOG_NAME, "starting player with arguments '%s'" % player_cmd)
         
             # Add URL now, as we don't want sensitive credentials in the logfile...
-            if self._player == PLAYER.OMXPLAYER:
-                player_cmd.append(url)
+        #    if self._player == PLAYER.OMXPLAYER:
+        #        player_cmd.append(url)
 
-            elif self._player == PLAYER.VLCPLAYER and self.visible:
+            if self._player == PLAYER.VLCPLAYER and self.visible:
                 player_cmd.append(url)
                 Window._vlc_active_stream_url[self._display_num - 1] = url
 
